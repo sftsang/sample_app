@@ -1,5 +1,5 @@
 # == Schema Information
-# Schema version: 20110322015040
+# Schema version: 20110324201941
 #
 # Table name: users
 #
@@ -10,6 +10,7 @@
 #  updated_at         :datetime
 #  encrypted_password :string(255)
 #  salt               :string(255)
+#  admin              :boolean
 #
 
 require 'digest'
@@ -33,6 +34,8 @@ class User < ActiveRecord::Base
                        
   before_save :encrypt_password
   
+  has_many :microposts, :dependent => :destroy
+  
   def has_password?(submitted_password)
     encrypted_password == encrypt(submitted_password)
   end
@@ -46,6 +49,11 @@ class User < ActiveRecord::Base
   def self.authenticate_with_salt(id, cookie_salt)
     user = find_by_id(id)
     (user && user.salt == cookie_salt) ? user : nil
+  end
+  
+  def feed
+    # This is preliminary. See Chapter 12 for the full implementation.
+    Micropost.where("user_id = ?", id)
   end
   
   private 
